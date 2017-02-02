@@ -6,9 +6,9 @@ import threading
 A_server
 Use case:
 def server_response(self):
-    input = self.a_read()
+    input = self.read()
     input += "A"
-    self.a_write(input)
+    self.write(input)
 server = AServer(server_ip, server_port, server_response)
 """
 
@@ -28,12 +28,12 @@ class AConnection:
     def __init__(self, connection):
         self.partner = connection
 
-    def a_write(self, message):
+    def write(self, message):
         self.partner.sendall(str(len(message)))
         self.partner.sendall("#")
         self.partner.sendall(message)
 
-    def a_read(self):
+    def read(self):
         message_length = ""
         while 1:
             get_input = self.partner.recv(1)
@@ -54,8 +54,30 @@ class AConnection:
 
         return ''.join(chunks)
 
-    def a_close(self):
+    def close(self):
         self.partner.close()
+
+    def send_file(conn, file_name):
+        try:
+            temp_file = open(file_name, "r")
+            while 1:
+                message = temp_file.read(1000)
+                conn.write(message)
+                if message == "":
+                    break
+            temp_file.close()
+        except IOError:
+            conn.write("")
+
+    def receive_file(conn, new_name):
+        temp_file = open(new_name, "w")
+        while 1:
+            message = conn.read()
+            temp_file.write(message)
+            print(message)
+            if message == "":
+                break
+        temp_file.close()
 
 
 class ASocketTo(AConnection):
